@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test-proxy:
+    name: Test Proxy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: proxy/go.mod
+          cache-dependency-path: proxy/go.sum
+
+      - name: Run tests
+        working-directory: proxy
+        run: go test -coverpkg=./internal/... -coverprofile=coverage.out ./...
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: proxy/coverage.out
+          flags: proxy
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+        working-directory: proxy
+
+  test-processing:
+    name: Test Processing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: processing/go.mod
+          cache-dependency-path: processing/go.sum
+
+      - name: Run tests
+        working-directory: processing
+        run: go test -tags integration -coverpkg=./internal/... -coverprofile=coverage.out -timeout 300s ./...
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: processing/coverage.out
+          flags: processing
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+        working-directory: processing
+
+  audit-frontend:
+    name: Audit Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: npm audit
+        working-directory: web
+        run: npm audit --audit-level=moderate

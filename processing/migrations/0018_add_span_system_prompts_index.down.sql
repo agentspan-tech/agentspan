@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_span_system_prompts_system_prompt_id;

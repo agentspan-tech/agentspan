@@ -1,0 +1,5 @@
+ignore:
+  - "processing/internal/db/*.sql.go"
+  - "processing/internal/testutil/**"
+  - "processing/cmd/**"
+  - "proxy/cmd/**"

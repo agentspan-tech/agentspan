@@ -1,0 +1,9 @@
+{{template "base" .}}
+{{define "title"}}Deletion reminder - AgentSpan{{end}}
+{{define "content"}}
+<h1 style="margin:0 0 16px;font-size:22px;font-weight:600;color:#e4e4e7;">Deletion reminder</h1>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">Hi {{.Name}},</p>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">This is a reminder that your organization <strong style="color:#e4e4e7;">{{.OrgName}}</strong> will be <strong style="color:#ef4444;">permanently deleted</strong> on <strong style="color:#e4e4e7;">{{.DeletionAt}}</strong>.</p>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">To cancel the deletion, visit your organization settings before the deletion date.</p>
+<p style="margin:0;font-size:13px;color:#71717a;line-height:1.5;">After the deletion date, all organization data will be permanently removed and cannot be recovered.</p>
+{{end}}
