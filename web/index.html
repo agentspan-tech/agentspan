@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AgentOrbit — AI Agent Observability Without Code Changes</title>
+    <meta name="description" content="AgentOrbit sits between your AI agent and LLM provider, captures every request and shows exactly what went wrong. Two config lines, no SDK. Free tier available." />
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="canonical" href="https://agentorbit.tech/" />
+
+    <!-- i18n alternates -->
+    <link rel="alternate" hreflang="en" href="https://agentorbit.tech/" />
+    <link rel="alternate" hreflang="ru" href="https://agentorbit.tech/" />
+    <link rel="alternate" hreflang="x-default" href="https://agentorbit.tech/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://agentorbit.tech/" />
+    <meta property="og:title" content="AgentOrbit — AI Agent Observability Without Code Changes" />
+    <meta property="og:description" content="Proxy between your AI agent and LLM provider. Captures every request, groups into sessions, shows failures. Two config lines, no SDK." />
+    <meta property="og:image" content="https://agentorbit.tech/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="ru_RU" />
+    <meta property="og:site_name" content="AgentOrbit" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AgentOrbit — AI Agent Observability Without Code Changes" />
+    <meta name="twitter:description" content="Proxy between your AI agent and LLM provider. Captures every request, groups into sessions, shows failures. Two config lines, no SDK." />
+    <meta name="twitter:image" content="https://agentorbit.tech/og-image.png" />
+
+    <!-- Structured Data: Organization + WebSite + SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://agentorbit.tech/#organization",
+          "name": "AgentOrbit",
+          "url": "https://agentorbit.tech",
+          "logo": "https://agentorbit.tech/logo.png",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "support@agentorbit.tech",
+            "contactType": "customer support"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://agentorbit.tech/#website",
+          "name": "AgentOrbit",
+          "url": "https://agentorbit.tech",
+          "publisher": { "@id": "https://agentorbit.tech/#organization" },
+          "inLanguage": ["en", "ru"]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "AgentOrbit",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Any",
+          "description": "Proxy and observability layer between AI agents and LLM providers. Captures every request, groups into sessions, detects failure patterns.",
+          "url": "https://agentorbit.tech",
+          "offers": [
+            {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "name": "Free",
+              "description": "1,000 spans/month, 3 members, 30 days retention"
+            },
+            {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "name": "Self-host",
+              "description": "Unlimited spans, unlimited members, your infrastructure"
+            }
+          ],
+          "provider": { "@id": "https://agentorbit.tech/#organization" }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Hide static skeleton from browsers; crawlers without CSS/JS still see it -->
+    <style>#seo-skeleton{display:none}</style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Static HTML skeleton for crawlers that don't execute JS (Yandex, LLM bots).
+         Hidden via CSS so browsers never flash it. Keep in sync with LandingPage.tsx + en.ts. -->
+    <div id="seo-skeleton">
+      <header>
+        <a href="/">AgentOrbit</a>
+        <nav>
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#pricing">Pricing</a>
+        </nav>
+        <a href="/login">Log in</a>
+        <a href="/register">Sign up</a>
+      </header>
+
+      <main>
+        <section>
+          <p>Closed Beta</p>
+          <h1>Understand why your AI agent fails</h1>
+          <p>AgentOrbit sits between your agent and the LLM provider, captures every request and shows exactly what went wrong — in a readable interface for the whole team. Two config lines, no SDK.</p>
+          <a href="/register">Get started free</a>
+          <a href="https://github.com/agentorbit-tech/agentorbit/tree/main/docs">View docs</a>
+        </section>
+
+        <section>
+          <h3>Failure rate alerts</h3>
+          <p>Get notified when your agent starts failing more than usual. Catch regressions before your users do.</p>
+          <h3>No SDK required</h3>
+          <p>Works out of the box — no SDK, just change two config lines. Cloud or self-host, your choice.</p>
+          <h3>Near-zero overhead</h3>
+          <p>~59ms per request. Proxy is synchronous, analytics are async. Your agent barely notices.</p>
+          <h3>Readable by non-engineers</h3>
+          <p>Session timelines and failure clusters are readable without knowing prompts or token counts.</p>
+        </section>
+
+        <section>
+          <h2>Works with your agents</h2>
+          <p>AgentOrbit integrates with any agent that uses a standard LLM SDK — just change the base URL.</p>
+          <p>Works today: OpenClaw, n8n, Cursor, Crew AI — via URL change.</p>
+          <p>Not supported: Claude Code (closed SDK), GitHub Copilot (closed SDK).</p>
+        </section>
+
+        <section id="how-it-works">
+          <h2>Two lines of code. Full visibility.</h2>
+          <p>Change the base URL and API key — that's it. No SDK wrappers, no code changes beyond that.</p>
+          <h3>1. Get your key</h3>
+          <p>Create a free account and get your AgentOrbit API key.</p>
+          <h3>2. Point to the proxy</h3>
+          <p>Change base_url to our proxy endpoint. Keep using your existing SDK.</p>
+          <h3>3. Start observing</h3>
+          <p>Every request is traced. Sessions and failures appear instantly.</p>
+        </section>
+
+        <section id="features">
+          <h2>Everything you need to debug agents</h2>
+          <p>Built for engineers and product managers who want to build reliable AI products.</p>
+          <h3>Session Timeline</h3>
+          <p>Open any session and in 10 seconds understand exactly where the agent went wrong — without reading raw logs.</p>
+          <h3>Failure Clusters</h3>
+          <p>Discover that 60% of your errors share the same root cause. Fix one pattern — drop your failure rate at once.</p>
+          <h3>Request Categories</h3>
+          <p>See which tasks users actually give the agent — and which request types underperform.</p>
+          <h3>Multi-provider</h3>
+          <p>OpenAI, Anthropic, DeepSeek and any OpenAI-compatible API. Switch providers — traces stay in one place.</p>
+        </section>
+
+        <section id="pricing">
+          <h2>Pricing</h2>
+          <p>Beta — free during testing</p>
+          <h3>Free</h3>
+          <p>1,000 spans/month, 3 members, 1 project, 30 days retention, basic narratives, deterministic clusters.</p>
+          <a href="/register">Get started free</a>
+          <h3>Pro</h3>
+          <p>100,000 spans/month, 20 members, 10 projects, 90 days retention, LLM narratives, failure clusters, request categories, alerts.</p>
+          <h3>Self-host</h3>
+          <p>Unlimited spans, unlimited members, unlimited projects, unlimited retention, full source code, Docker Compose deploy.</p>
+          <a href="https://github.com/agentorbit-tech/agentorbit">View on GitHub</a>
+        </section>
+
+        <section>
+          <h2>Start in two minutes</h2>
+          <p>No credit card. No SDK changes. Just change two lines of config.</p>
+          <a href="/register">Get started free</a>
+        </section>
+      </main>
+
+      <footer>
+        <p>AgentOrbit</p>
+        <p>&copy; 2026 AgentOrbit</p>
+        <a href="/privacy-policy">Privacy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="/consent">Data Consent</a>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

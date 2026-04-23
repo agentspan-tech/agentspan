@@ -1,0 +1,19 @@
+# Environment
+.env
+
+# Go
+*/vendor/
+*/bin/
+*/*.test
+
+# Frontend
+web/node_modules/
+web/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Superpowers brainstorm artifacts
+.superpowers/

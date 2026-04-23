@@ -1,0 +1,9 @@
+{{template "base" .}}
+{{define "title"}}Организация запланирована к удалению — AgentOrbit{{end}}
+{{define "content"}}
+<h1 style="margin:0 0 16px;font-size:22px;font-weight:600;color:#fafafa;letter-spacing:-0.01em;">Организация запланирована к удалению</h1>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">Здравствуйте, {{.Name}}!</p>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">Ваша организация <strong style="color:#fafafa;">{{.OrgName}}</strong> запланирована к безвозвратному удалению <strong style="color:#fafafa;">{{.ScheduledAt}}</strong>.</p>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">У вас есть 14 дней, чтобы отменить это действие в настройках организации. После этой даты все данные будут удалены безвозвратно.</p>
+<p style="margin:0;font-size:13px;color:#71717a;line-height:1.5;">Если вы не запускали удаление, свяжитесь с владельцем организации.</p>
+{{end}}

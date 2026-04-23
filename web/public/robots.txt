@@ -1,0 +1,37 @@
+# AgentOrbit — robots.txt
+# https://agentorbit.tech
+
+User-agent: *
+Allow: /
+Disallow: /dash
+Disallow: /sessions
+Disallow: /keys
+Disallow: /system-prompts
+Disallow: /failure-clusters
+Disallow: /settings
+Disallow: /create-org
+Disallow: /verify-email
+Disallow: /reset-password
+Disallow: /request-password-reset
+
+# Search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# LLM crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Disallow: /
+
+Sitemap: https://agentorbit.tech/sitemap.xml

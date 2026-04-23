@@ -1,0 +1,9 @@
+{{template "base" .}}
+{{define "title"}}Напоминание об удалении — AgentOrbit{{end}}
+{{define "content"}}
+<h1 style="margin:0 0 16px;font-size:22px;font-weight:600;color:#fafafa;letter-spacing:-0.01em;">Напоминание об удалении</h1>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">Здравствуйте, {{.Name}}!</p>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">Напоминаем, что ваша организация <strong style="color:#fafafa;">{{.OrgName}}</strong> будет <strong style="color:#ef4444;">безвозвратно удалена</strong> <strong style="color:#fafafa;">{{.DeletionAt}}</strong>.</p>
+<p style="margin:0 0 24px;font-size:15px;color:#a1a1aa;line-height:1.6;">Чтобы отменить удаление, зайдите в настройки организации до этой даты.</p>
+<p style="margin:0;font-size:13px;color:#71717a;line-height:1.5;">После этой даты все данные организации будут удалены безвозвратно.</p>
+{{end}}

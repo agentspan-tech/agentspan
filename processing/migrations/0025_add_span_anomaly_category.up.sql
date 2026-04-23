@@ -1,0 +1,1 @@
+ALTER TABLE spans ADD COLUMN IF NOT EXISTS anomaly_category TEXT;

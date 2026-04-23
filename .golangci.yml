@@ -1,0 +1,36 @@
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - gosec
+    - staticcheck
+    - govet
+    - unused
+    - ineffassign
+    - gocritic
+  disable:
+    - exhaustive
+
+linters-settings:
+  gosec:
+    excludes:
+      - G104
+  errcheck:
+    exclude-functions:
+      - (net/http.ResponseWriter).Write
+      - (*log/slog.Logger).Info
+      - (*log/slog.Logger).Error
+      - (*log/slog.Logger).Warn
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+    - path: internal/db/
+      linters:
+        - errcheck
+        - gocritic

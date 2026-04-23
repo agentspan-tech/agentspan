@@ -1,0 +1,2 @@
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_span_system_prompts_system_prompt_id
+ON span_system_prompts(system_prompt_id);

@@ -1,0 +1,46 @@
+# AgentOrbit
+
+> AI agent observability without code changes. Proxy between your agent and LLM provider.
+
+AgentOrbit is a proxy and observability layer that sits between AI agents and LLM providers (OpenAI, Anthropic, DeepSeek, and any OpenAI-compatible API). Agents point their `base_url` at AgentOrbit — it transparently proxies requests, captures every span, groups them into sessions, detects failure patterns, and serves a real-time dashboard.
+
+## How it works
+
+1. Create an account and get your AgentOrbit API key
+2. Change `base_url` in your agent config to the AgentOrbit proxy endpoint
+3. Every request is traced — sessions, failures, and metrics appear instantly
+
+No SDK required. Two config lines. ~59ms overhead per request.
+
+## Key features
+
+- **Session Timeline**: See every LLM request in a session with status, tokens, cost, and duration
+- **Failure Clusters**: Discover recurring error patterns across agent sessions
+- **Request Categories**: See which tasks users give the agent and which underperform
+- **Multi-provider**: OpenAI, Anthropic, DeepSeek, and any OpenAI-compatible API in one dashboard
+- **Failure Rate Alerts**: Get notified when your agent starts failing more than usual
+- **Readable by non-engineers**: Session timelines are understandable without knowing prompts or token counts
+
+## Compatibility
+
+Works with any agent that uses a standard LLM SDK with configurable `base_url`:
+- OpenClaw, n8n, Cursor, Crew AI — via URL change
+
+Does NOT work with closed-SDK agents:
+- Claude Code (hardcoded Anthropic endpoints)
+- GitHub Copilot (proprietary infrastructure)
+
+## Pricing
+
+- **Free**: 1,000 spans/month, 3 members, 1 project, 30 days retention
+- **Pro** (beta): 100,000 spans/month, 20 members, 10 projects, LLM narratives, alerts
+- **Self-host**: Unlimited everything, your infrastructure, open-source (Docker Compose)
+
+## Links
+
+- Website: https://agentorbit.tech
+- GitHub: https://github.com/agentorbit-tech/agentorbit
+- Documentation: https://github.com/agentorbit-tech/agentorbit/tree/main/docs
+- Privacy Policy: https://agentorbit.tech/privacy-policy
+- Terms of Service: https://agentorbit.tech/terms
+- Contact: support@agentorbit.tech
