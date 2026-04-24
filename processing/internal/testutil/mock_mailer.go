@@ -12,6 +12,9 @@ import "time"
 type MockMailer struct {
 	Calls      []string
 	LastLocale string
+	// VerificationErr, when set, is returned from SendVerification so tests can
+	// exercise mailer-failure paths (e.g. transactional rollback on send failure).
+	VerificationErr error
 }
 
 func (m *MockMailer) IsSMTP() bool { return false }
@@ -19,6 +22,9 @@ func (m *MockMailer) IsSMTP() bool { return false }
 func (m *MockMailer) SendVerification(to, name, token, locale string) (string, error) {
 	m.Calls = append(m.Calls, "verification:"+to)
 	m.LastLocale = locale
+	if m.VerificationErr != nil {
+		return "", m.VerificationErr
+	}
 	return "http://test/verify?token=" + token, nil
 }
 

@@ -9,7 +9,7 @@ export const en = {
   nav_github: 'GitHub',
 
   // Hero
-  hero_badge: 'Closed Beta',
+  hero_badge: 'Open Beta',
   hero_title: 'Understand why your',
   hero_title_highlight: 'AI agent fails',
   hero_subtitle: 'AgentOrbit sits between your agent and the LLM provider, captures every request and shows exactly what went wrong — in a readable interface for the whole team. Two config lines, no SDK.',

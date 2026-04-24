@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthGuard } from '@/components/app/AuthGuard'
 import { AppShell } from '@/components/app/AppShell'
-import { VersionBadge } from '@/components/app/VersionBadge'
+import { PublicLayout } from '@/components/app/PublicLayout'
 import { LoginPage } from '@/pages/public/LoginPage'
 import { RegisterPage } from '@/pages/public/RegisterPage'
 import { VerifyEmailPage } from '@/pages/public/VerifyEmailPage'
@@ -32,19 +32,28 @@ const router = createBrowserRouter([
     element: <Outlet />,
     errorElement: <RouteErrorBoundary />,
     children: [
-      { path: '/', element: <LandingPage /> },
-      { path: '/login', element: <LoginPage /> },
-      { path: '/register', element: <RegisterPage /> },
-      { path: '/verify-email', element: <VerifyEmailPage /> },
-      { path: '/request-password-reset', element: <RequestPasswordResetPage /> },
-      { path: '/reset-password', element: <ResetPasswordPage /> },
-      { path: '/privacy-policy', element: <PrivacyPolicyPage /> },
-      { path: '/terms', element: <TermsPage /> },
-      { path: '/consent', element: <ConsentPage /> },
+      {
+        element: <PublicLayout />,
+        children: [
+          { path: '/', element: <LandingPage /> },
+          { path: '/login', element: <LoginPage /> },
+          { path: '/register', element: <RegisterPage /> },
+          { path: '/verify-email', element: <VerifyEmailPage /> },
+          { path: '/request-password-reset', element: <RequestPasswordResetPage /> },
+          { path: '/reset-password', element: <ResetPasswordPage /> },
+          { path: '/privacy-policy', element: <PrivacyPolicyPage /> },
+          { path: '/terms', element: <TermsPage /> },
+          { path: '/consent', element: <ConsentPage /> },
+          { path: '*', element: <NotFoundPage /> },
+        ],
+      },
       {
         element: <AuthGuard />,
         children: [
-          { path: '/create-org', element: <CreateOrgPage /> },
+          {
+            element: <PublicLayout />,
+            children: [{ path: '/create-org', element: <CreateOrgPage /> }],
+          },
           {
             element: <AppShell />,
             children: [
@@ -60,7 +69,6 @@ const router = createBrowserRouter([
           },
         ],
       },
-      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])
@@ -69,7 +77,6 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-      <VersionBadge />
     </QueryClientProvider>
   )
 }

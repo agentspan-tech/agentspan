@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { Sidebar, MobileTopBar, useSidebarState } from './Sidebar'
+import { VersionBadge } from './VersionBadge'
 
 export function AppShell() {
   const { collapsed, toggle, mobileOpen, openMobile, closeMobile } = useSidebarState()
@@ -16,8 +17,9 @@ export function AppShell() {
         )}
       >
         <MobileTopBar onMenuClick={openMobile} />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto flex flex-col">
           <Outlet />
+          <VersionBadge />
         </main>
       </div>
     </div>

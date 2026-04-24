@@ -390,3 +390,52 @@ func TestSMTPMailer_EnvelopeUsesBareAddress(t *testing.T) {
 	}
 }
 
+// TestSMTPMailer_SubjectRFC2047Encoded verifies that non-ASCII Subject values
+// are RFC 2047 encoded. Plain UTF-8 bytes in a Subject header violate RFC 5322
+// section 2.2 and are rejected by some SMTP-over-HTTP providers (e.g. Resend)
+// with a 500 error, which previously broke Russian-locale registration.
+func TestSMTPMailer_SubjectRFC2047Encoded(t *testing.T) {
+	srv := newFakeSMTP(t)
+	m := newTestMailer(srv.addr)
+
+	_, err := m.SendVerification("user@test.com", "Алиса", "tok", "ru")
+	srv.wait(t)
+
+	if err != nil {
+		t.Fatalf("SendVerification: %v", err)
+	}
+
+	// Raw Cyrillic Subject must not leak into the header.
+	if strings.Contains(srv.message, "Subject: Подтвердите") {
+		t.Errorf("Subject header contains raw UTF-8 bytes:\n%s", srv.message)
+	}
+	// Encoded form should be present (QEncoding produces =?UTF-8?q?...?= or =?utf-8?q?...?=).
+	if !strings.Contains(strings.ToLower(srv.message), "subject: =?utf-8?q?") {
+		t.Errorf("expected RFC 2047 encoded Subject, got:\n%s", srv.message)
+	}
+}
+
+// TestSMTPMailer_FromHeaderNonASCIIDisplayName verifies that non-ASCII
+// display-names in From are RFC 2047 encoded while the email address stays bare.
+func TestSMTPMailer_FromHeaderNonASCIIDisplayName(t *testing.T) {
+	srv := newFakeSMTP(t)
+	m := newTestMailerFrom(srv.addr, "АгентОрбит <noreply@agentorbit.tech>")
+
+	_, err := m.SendVerification("user@test.com", "Alice", "tok", "en")
+	srv.wait(t)
+
+	if err != nil {
+		t.Fatalf("SendVerification: %v", err)
+	}
+
+	if strings.Contains(srv.message, "From: АгентОрбит") {
+		t.Errorf("From header contains raw UTF-8 display-name:\n%s", srv.message)
+	}
+	if !strings.Contains(strings.ToLower(srv.message), "from: =?utf-8?q?") {
+		t.Errorf("expected RFC 2047 encoded From display-name, got:\n%s", srv.message)
+	}
+	if !strings.Contains(srv.message, "<noreply@agentorbit.tech>") {
+		t.Errorf("expected bare address in From header, got:\n%s", srv.message)
+	}
+}
+

@@ -248,9 +248,11 @@ func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, l
 		}, nil
 	}
 
-	// Wrap user creation + verification token in transaction for atomicity.
+	// Wrap user creation, verification token, and email send in a single transaction
+	// so a mailer failure rolls back the user row — otherwise the email gets "stuck"
+	// as an unverified account and subsequent registration attempts return 409.
 	var user db.User
-	var rawToken string
+	var link string
 	err = txutil.WithTx(ctx, s.pool, func(tx pgx.Tx) error {
 		q := s.queries.WithTx(tx)
 
@@ -274,30 +276,27 @@ func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, l
 			return fmt.Errorf("register: record terms acceptance: %w", txErr)
 		}
 
-		var tokenHash string
-		rawToken, tokenHash, txErr = crypto.GenerateToken()
+		rawToken, tokenHash, txErr := crypto.GenerateToken()
 		if txErr != nil {
 			return fmt.Errorf("register: generate token: %w", txErr)
 		}
 
-		_, txErr = q.CreateEmailVerificationToken(ctx, db.CreateEmailVerificationTokenParams{
+		if _, txErr = q.CreateEmailVerificationToken(ctx, db.CreateEmailVerificationTokenParams{
 			UserID:    user.ID,
 			TokenHash: tokenHash,
 			ExpiresAt: time.Now().Add(24 * time.Hour),
-		})
-		if txErr != nil {
+		}); txErr != nil {
 			return fmt.Errorf("register: store verification token: %w", txErr)
+		}
+
+		link, txErr = s.mailer.SendVerification(emailAddr, name, rawToken, locale)
+		if txErr != nil {
+			return fmt.Errorf("register: send verification email: %w", txErr)
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
-	}
-
-	// Send verification email (outside transaction — email is not transactional).
-	link, err := s.mailer.SendVerification(emailAddr, name, rawToken, locale)
-	if err != nil {
-		return nil, fmt.Errorf("register: send verification email: %w", err)
 	}
 
 	result := &RegisterResult{

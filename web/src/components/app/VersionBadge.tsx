@@ -15,10 +15,14 @@ export function VersionBadge() {
 
   if (!data?.version) return null
 
+  // Lives in the normal flow at the end of its parent. Pair with a `flex flex-col`
+  // `min-h-screen` parent so `mt-auto` pins the badge to the bottom of the viewport
+  // when content is short, and to the bottom of the content when it's longer —
+  // never overlapping anything.
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed bottom-1.5 right-2 z-50 select-none text-[10px] font-mono tracking-tight text-zinc-600/70"
+      className="mt-auto flex justify-end pointer-events-none select-none px-2 pb-1.5 text-[10px] font-mono tracking-tight text-zinc-600/70"
     >
       {data.version}
     </div>

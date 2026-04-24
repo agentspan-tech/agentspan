@@ -11,7 +11,7 @@ export const ru: Record<TranslationKey, string> = {
   nav_github: 'GitHub',
 
   // Hero
-  hero_badge: 'Закрытая бета',
+  hero_badge: 'Открытая бета',
   hero_title: 'Поймите, почему ваш',
   hero_title_highlight: 'AI-агент ошибается',
   hero_subtitle: 'AgentOrbit встаёт между агентом и LLM-провайдером, собирает каждый запрос и показывает, что именно пошло не так — в понятном интерфейсе для всей команды. Две строки конфига, без SDK.',

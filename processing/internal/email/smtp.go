@@ -5,6 +5,8 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"mime"
+	"net/mail"
 	"net/smtp"
 	"strings"
 	"time"
@@ -129,6 +131,37 @@ func sanitizeHeader(s string) string {
 	return strings.NewReplacer("\r", "", "\n", "").Replace(s)
 }
 
+// encodeSubject RFC 2047-encodes a Subject value. ASCII passes through unchanged;
+// non-ASCII becomes =?UTF-8?Q?...?= / =?UTF-8?B?...?= so providers that enforce
+// RFC 5322 section 2.2 (ASCII-only header values) accept the message.
+func encodeSubject(s string) string {
+	return mime.QEncoding.Encode("utf-8", sanitizeHeader(s))
+}
+
+// encodeFromHeader RFC 2047-encodes the display-name portion of a From header
+// only when it contains non-ASCII bytes. ASCII display-names and bare addresses
+// pass through unchanged to preserve their original form.
+func encodeFromHeader(s string) string {
+	s = sanitizeHeader(s)
+	if isASCII(s) {
+		return s
+	}
+	addr, err := mail.ParseAddress(s)
+	if err != nil || addr.Name == "" {
+		return s
+	}
+	return fmt.Sprintf("%s <%s>", mime.QEncoding.Encode("utf-8", addr.Name), addr.Address)
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > 127 {
+			return false
+		}
+	}
+	return true
+}
+
 // sendHTML sends an email with multipart/alternative containing both plain text and HTML parts.
 // Falls back to plain text if template rendering fails.
 func (m *SMTPMailer) sendHTML(to, subject, textBody string, tmplName string, data interface{}) error {
@@ -141,7 +174,7 @@ func (m *SMTPMailer) sendHTML(to, subject, textBody string, tmplName string, dat
 	boundary := fmt.Sprintf("agentorbit-%d", time.Now().UnixNano())
 	headers := fmt.Sprintf(
 		"From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=%s\r\n\r\n",
-		sanitizeHeader(m.cfg.SMTPFromHeader), sanitizeHeader(to), sanitizeHeader(subject), boundary,
+		encodeFromHeader(m.cfg.SMTPFromHeader), sanitizeHeader(to), encodeSubject(subject), boundary,
 	)
 	body := fmt.Sprintf(
 		"--%s\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n%s\r\n--%s\r\nContent-Type: text/html; charset=utf-8\r\n\r\n%s\r\n--%s--",
@@ -156,7 +189,7 @@ func (m *SMTPMailer) sendHTML(to, subject, textBody string, tmplName string, dat
 func (m *SMTPMailer) send(to, subject, body string) error {
 	addr := fmt.Sprintf("%s:%d", m.cfg.SMTPHost, m.cfg.SMTPPort)
 	auth := smtp.PlainAuth("", m.cfg.SMTPUser, m.cfg.SMTPPass, m.cfg.SMTPHost)
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n%s", sanitizeHeader(m.cfg.SMTPFromHeader), sanitizeHeader(to), sanitizeHeader(subject), body)
+	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n%s", encodeFromHeader(m.cfg.SMTPFromHeader), sanitizeHeader(to), encodeSubject(subject), body)
 	if err := smtp.SendMail(addr, auth, m.cfg.SMTPFromEnvelope, []string{to}, []byte(msg)); err != nil {
 		return fmt.Errorf("smtp send: %w", err)
 	}

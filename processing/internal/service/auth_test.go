@@ -4,6 +4,7 @@ package service_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -66,6 +67,38 @@ func TestAuthService_Register_DuplicateEmail(t *testing.T) {
 	// No new user was created, so only 1 mailer call from first registration
 	if len(mailer.Calls) != 1 {
 		t.Errorf("expected 1 mailer call (no verification sent for duplicate), got %d", len(mailer.Calls))
+	}
+}
+
+// TestAuthService_Register_RollsBackOnMailerFailure verifies that when the
+// verification email fails to send, the user row is not persisted — so the
+// same email can be retried instead of getting locked out with a 409.
+func TestAuthService_Register_RollsBackOnMailerFailure(t *testing.T) {
+	truncate(t)
+	pool, queries := sharedPool, sharedQueries
+
+	mailer := &testutil.MockMailer{VerificationErr: errors.New("smtp 500: Subject is not ASCII")}
+	svc := service.NewAuthService(context.Background(), queries, pool, mailer, "test-jwt-secret", "test-hmac-secret", "cloud", 24*time.Hour, false)
+
+	ctx := context.Background()
+	_, err := svc.Register(ctx, "rollback@example.com", "Rollback User", "Password1", "ru")
+	if err == nil {
+		t.Fatal("expected error when mailer fails, got nil")
+	}
+
+	// User row must not exist — mailer failure should roll back the whole transaction.
+	if _, err := queries.GetUserByEmail(ctx, "rollback@example.com"); err == nil {
+		t.Fatal("expected user to be rolled back after mailer failure, but user still exists")
+	}
+
+	// Retry with a working mailer must succeed (no 409 email_exists).
+	mailer.VerificationErr = nil
+	result, err := svc.Register(ctx, "rollback@example.com", "Rollback User", "Password1", "ru")
+	if err != nil {
+		t.Fatalf("retry after rollback failed: %v", err)
+	}
+	if result.UserID.String() == "" {
+		t.Error("expected non-empty user ID on retry")
 	}
 }
 
