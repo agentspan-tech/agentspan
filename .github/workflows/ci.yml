@@ -14,9 +14,9 @@ jobs:
     name: Test Proxy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: proxy/go.mod
           cache-dependency-path: proxy/go.sum
@@ -26,7 +26,7 @@ jobs:
         run: go test -coverpkg=./internal/... -coverprofile=coverage.out ./...
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: proxy/coverage.out
           flags: proxy
@@ -42,9 +42,9 @@ jobs:
     name: Test Processing
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: processing/go.mod
           cache-dependency-path: processing/go.sum
@@ -54,7 +54,7 @@ jobs:
         run: go test -tags integration -coverpkg=./internal/... -coverprofile=coverage.out -timeout 300s ./...
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: processing/coverage.out
           flags: processing
@@ -70,9 +70,9 @@ jobs:
     name: Audit Frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: npm
