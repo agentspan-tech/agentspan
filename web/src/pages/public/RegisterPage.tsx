@@ -31,9 +31,8 @@ export function RegisterPage() {
   }, [setupStatus, navigate])
 
   const registerMutation = useMutation({
-    mutationFn: () => api.post<RegisterResponse>('/auth/register', { email, name, password, accepted_terms: true, accepted_privacy: true }),
+    mutationFn: () => api.post<RegisterResponse>('/auth/register', { email, name, password, organization_name: orgName.trim(), accepted_terms: true, accepted_privacy: true }),
     onSuccess: (data) => {
-      if (orgName.trim()) sessionStorage.setItem('pending_org_name', orgName.trim())
       // Self-host first user: auto-verified, go straight to login
       if (data.auto_login) {
         navigate('/login', { replace: true, state: { registered: true } })

@@ -76,7 +76,10 @@ func TestHandler_RequestPasswordReset_InvalidJSON_V2(t *testing.T) {
 
 // --- Org handler coverage: list with empty, invalid settings body ---
 
-func TestHandler_ListOrgs_Empty(t *testing.T) {
+// ListOrgs should return the organization auto-provisioned at signup. Previously
+// this test expected an empty list, which was only possible because registration
+// did not create the org — fixed along with the dashboard "create org" re-prompt.
+func TestHandler_ListOrgs_ReturnsSignupOrg(t *testing.T) {
 	env := setupTestEnv(t)
 	token := registerAndLogin(t, env, "emptylist@example.com", "Empty", "Password1")
 
@@ -88,8 +91,8 @@ func TestHandler_ListOrgs_Empty(t *testing.T) {
 	if err := json.NewDecoder(rr.Body).Decode(&orgs); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
-	if len(orgs) != 0 {
-		t.Errorf("expected 0 orgs, got %d", len(orgs))
+	if len(orgs) != 1 {
+		t.Errorf("expected 1 org provisioned by signup, got %d", len(orgs))
 	}
 }
 

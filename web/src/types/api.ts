@@ -236,6 +236,7 @@ export interface LoginResponse {
 export interface RegisterResponse {
   user_id: string
   email: string
+  organization_id?: string
   email_sent?: boolean
   verification_url?: string
   auto_login?: boolean

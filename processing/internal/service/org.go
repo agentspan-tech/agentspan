@@ -58,67 +58,81 @@ func generateSlug(name string) string {
 // CreateOrganization creates a new organization with the given user as owner.
 // If the generated slug collides, a 4-char random suffix is appended.
 func (s *OrgService) CreateOrganization(ctx context.Context, userID uuid.UUID, name string) (*db.Organization, error) {
-	if strings.TrimSpace(name) == "" {
-		return nil, &ServiceError{Code: "invalid_name", Status: 400, Message: "Organization name is required"}
-	}
-	if len(name) > 200 {
-		return nil, &ServiceError{Code: "invalid_name", Status: 400, Message: "Organization name must not exceed 200 characters"}
+	if err := validateOrgName(name); err != nil {
+		return nil, err
 	}
 
-	slug := generateSlug(name)
-
-	// Try to acquire a unique slug (at most one retry with suffix).
 	var org db.Organization
 	err := txutil.WithTx(ctx, s.pool, func(tx pgx.Tx) error {
 		q := s.queries.WithTx(tx)
-
-		// Check slug collision and append suffix if needed.
-		candidateSlug := slug
-		if _, err := q.GetOrganizationBySlug(ctx, candidateSlug); err == nil {
-			// Slug taken — append random 4-char hex suffix.
-			suffix, err := randomHex(2) // 2 bytes = 4 hex chars
-			if err != nil {
-				return fmt.Errorf("generate slug suffix: %w", err)
-			}
-			candidateSlug = slug + "-" + suffix
-			if len(candidateSlug) > 50 {
-				candidateSlug = candidateSlug[:50]
-				candidateSlug = strings.TrimRight(candidateSlug, "-")
-			}
-		} else if !errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("check slug: %w", err)
-		}
-
-		plan := "free"
-		if s.deploymentMode == "self_host" {
-			plan = "self_host"
-		}
-
-		created, err := q.CreateOrganization(ctx, db.CreateOrganizationParams{
-			Name: name,
-			Slug: candidateSlug,
-			Plan: plan,
-		})
+		created, err := createOrganizationWithOwnerTx(ctx, q, name, s.deploymentMode, userID)
 		if err != nil {
-			return fmt.Errorf("create organization: %w", err)
+			return err
 		}
-
-		_, err = q.CreateMembership(ctx, db.CreateMembershipParams{
-			OrganizationID: created.ID,
-			UserID:         userID,
-			Role:           "owner",
-		})
-		if err != nil {
-			return fmt.Errorf("create membership: %w", err)
-		}
-
-		org = created
+		org = *created
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 	return &org, nil
+}
+
+// validateOrgName checks that the organization name is non-empty and within length limits.
+func validateOrgName(name string) error {
+	if strings.TrimSpace(name) == "" {
+		return &ServiceError{Code: "invalid_org_name", Status: 400, Message: "Organization name is required"}
+	}
+	if len(name) > 200 {
+		return &ServiceError{Code: "invalid_org_name", Status: 400, Message: "Organization name must not exceed 200 characters"}
+	}
+	return nil
+}
+
+// createOrganizationWithOwnerTx creates an organization and its owner membership
+// inside an existing transaction. Resolves slug collisions by appending a random
+// hex suffix. Shared between OrgService.CreateOrganization and AuthService.Register
+// so signup can create the org atomically with the user row.
+func createOrganizationWithOwnerTx(ctx context.Context, q *db.Queries, name, deploymentMode string, ownerID uuid.UUID) (*db.Organization, error) {
+	candidateSlug := generateSlug(name)
+
+	if _, err := q.GetOrganizationBySlug(ctx, candidateSlug); err == nil {
+		suffix, err := randomHex(2)
+		if err != nil {
+			return nil, fmt.Errorf("generate slug suffix: %w", err)
+		}
+		candidateSlug = candidateSlug + "-" + suffix
+		if len(candidateSlug) > 50 {
+			candidateSlug = candidateSlug[:50]
+			candidateSlug = strings.TrimRight(candidateSlug, "-")
+		}
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return nil, fmt.Errorf("check slug: %w", err)
+	}
+
+	plan := "free"
+	if deploymentMode == "self_host" {
+		plan = "self_host"
+	}
+
+	created, err := q.CreateOrganization(ctx, db.CreateOrganizationParams{
+		Name: name,
+		Slug: candidateSlug,
+		Plan: plan,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("create organization: %w", err)
+	}
+
+	if _, err := q.CreateMembership(ctx, db.CreateMembershipParams{
+		OrganizationID: created.ID,
+		UserID:         ownerID,
+		Role:           "owner",
+	}); err != nil {
+		return nil, fmt.Errorf("create membership: %w", err)
+	}
+
+	return &created, nil
 }
 
 // GetOrganization returns an organization by ID.

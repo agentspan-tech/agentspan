@@ -191,7 +191,7 @@ func registerAndLogin(t *testing.T, env *testEnv, email, name, password string) 
 	t.Helper()
 	ctx := context.Background()
 
-	result, err := env.authSvc.Register(ctx, email, name, password, "en")
+	result, err := env.authSvc.Register(ctx, email, name, password, "en", "Test Org")
 	if err != nil {
 		t.Fatalf("register failed: %v", err)
 	}
@@ -280,7 +280,7 @@ func TestHandler_SetupStatus(t *testing.T) {
 
 func TestHandler_Register(t *testing.T) {
 	env := setupTestEnv(t)
-	body := jsonBody(t, map[string]interface{}{"email": "new@example.com", "name": "New User", "password": "Password1", "accepted_terms": true, "accepted_privacy": true})
+	body := jsonBody(t, map[string]interface{}{"email": "new@example.com", "name": "New User", "password": "Password1", "organization_name": "New Org", "accepted_terms": true, "accepted_privacy": true})
 	req := httptest.NewRequest("POST", "/auth/register", body)
 	req.Header.Set("Content-Type", "application/json")
 	rr := do(t, env, req)
@@ -291,7 +291,7 @@ func TestHandler_Register(t *testing.T) {
 
 func TestHandler_Register_InvalidEmail(t *testing.T) {
 	env := setupTestEnv(t)
-	body := jsonBody(t, map[string]interface{}{"email": "not-an-email", "name": "User", "password": "Password1", "accepted_terms": true, "accepted_privacy": true})
+	body := jsonBody(t, map[string]interface{}{"email": "not-an-email", "name": "User", "password": "Password1", "organization_name": "Org", "accepted_terms": true, "accepted_privacy": true})
 	req := httptest.NewRequest("POST", "/auth/register", body)
 	req.Header.Set("Content-Type", "application/json")
 	rr := do(t, env, req)
@@ -302,7 +302,7 @@ func TestHandler_Register_InvalidEmail(t *testing.T) {
 
 func TestHandler_Register_WeakPassword(t *testing.T) {
 	env := setupTestEnv(t)
-	body := jsonBody(t, map[string]interface{}{"email": "weak@example.com", "name": "User", "password": "short", "accepted_terms": true, "accepted_privacy": true})
+	body := jsonBody(t, map[string]interface{}{"email": "weak@example.com", "name": "User", "password": "short", "organization_name": "Org", "accepted_terms": true, "accepted_privacy": true})
 	req := httptest.NewRequest("POST", "/auth/register", body)
 	req.Header.Set("Content-Type", "application/json")
 	rr := do(t, env, req)
@@ -391,7 +391,7 @@ func TestHandler_ResendVerification_Unverified(t *testing.T) {
 	env := setupTestEnv(t)
 	ctx := context.Background()
 	// Create an unverified user (do NOT call registerAndLogin which auto-verifies).
-	if _, err := env.authSvc.Register(ctx, "resend@example.com", "Resend User", "Password1", "en"); err != nil {
+	if _, err := env.authSvc.Register(ctx, "resend@example.com", "Resend User", "Password1", "en", "Test Org"); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 	before := len(env.mailer.Calls)
@@ -1188,7 +1188,7 @@ func TestHandler_Auth_VerifyEmail(t *testing.T) {
 	env := setupTestEnv(t)
 
 	// Register (returns verification URL via register response when !SMTP)
-	body := jsonBody(t, map[string]interface{}{"email": "vfy@example.com", "name": "Vfy User", "password": "Password1", "accepted_terms": true, "accepted_privacy": true})
+	body := jsonBody(t, map[string]interface{}{"email": "vfy@example.com", "name": "Vfy User", "password": "Password1", "organization_name": "Vfy Org", "accepted_terms": true, "accepted_privacy": true})
 	req := httptest.NewRequest("POST", "/auth/register", body)
 	req.Header.Set("Content-Type", "application/json")
 	rr := do(t, env, req)
@@ -3564,7 +3564,7 @@ func TestHandler_Register_DuplicateEmail(t *testing.T) {
 
 	body := jsonBody(t, map[string]interface{}{
 		"email": "dup@example.com", "name": "User", "password": "Password1",
-		"accepted_terms": true, "accepted_privacy": true,
+		"organization_name": "Dup Org", "accepted_terms": true, "accepted_privacy": true,
 	})
 	req := httptest.NewRequest("POST", "/auth/register", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -3576,7 +3576,7 @@ func TestHandler_Register_DuplicateEmail(t *testing.T) {
 	// Register again with same email
 	body = jsonBody(t, map[string]interface{}{
 		"email": "dup@example.com", "name": "User 2", "password": "Password2",
-		"accepted_terms": true, "accepted_privacy": true,
+		"organization_name": "Dup Org 2", "accepted_terms": true, "accepted_privacy": true,
 	})
 	req = httptest.NewRequest("POST", "/auth/register", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -3592,7 +3592,7 @@ func TestHandler_Login_UnverifiedEmail(t *testing.T) {
 	// Register without verifying email
 	body := jsonBody(t, map[string]interface{}{
 		"email": "unverified@example.com", "name": "Unverified", "password": "Password1",
-		"accepted_terms": true, "accepted_privacy": true,
+		"organization_name": "Unverified Org", "accepted_terms": true, "accepted_privacy": true,
 	})
 	req := httptest.NewRequest("POST", "/auth/register", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -3913,7 +3913,7 @@ func TestHandler_E2E_RegisterToStats(t *testing.T) {
 	// 1. Register
 	regBody := jsonBody(t, map[string]interface{}{
 		"email": "e2e@example.com", "name": "E2E User", "password": "Password1",
-		"accepted_terms": true, "accepted_privacy": true,
+		"organization_name": "E2E Primary Org", "accepted_terms": true, "accepted_privacy": true,
 	})
 	req := httptest.NewRequest("POST", "/auth/register", regBody)
 	req.Header.Set("Content-Type", "application/json")

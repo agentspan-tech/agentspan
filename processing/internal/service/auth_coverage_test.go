@@ -25,7 +25,7 @@ func TestAuthService_ResendVerification_Success(t *testing.T) {
 	mailer := &testutil.MockMailer{}
 	svc := service.NewAuthService(ctx, sharedQueries, sharedPool, mailer, "test-jwt-secret", "test-hmac-secret", "cloud", 24*time.Hour, false)
 
-	if _, err := svc.Register(ctx, "resend@example.com", "Resend User", "Password1", "en"); err != nil {
+	if _, err := svc.Register(ctx, "resend@example.com", "Resend User", "Password1", "en", "Test Org"); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 	before := len(mailer.Calls)
@@ -54,7 +54,7 @@ func TestAuthService_ResendVerification_AlreadyVerified(t *testing.T) {
 	mailer := &testutil.MockMailer{}
 	svc := service.NewAuthService(ctx, sharedQueries, sharedPool, mailer, "test-jwt-secret", "test-hmac-secret", "cloud", 24*time.Hour, false)
 
-	result, err := svc.Register(ctx, "verified@example.com", "Verified User", "Password1", "en")
+	result, err := svc.Register(ctx, "verified@example.com", "Verified User", "Password1", "en", "Test Org")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -76,7 +76,7 @@ func TestAuthService_GetMe_Success(t *testing.T) {
 	ctx := context.Background()
 	svc := newAuthSvc(t)
 
-	result, err := svc.Register(ctx, "me@example.com", "Me User", "Password1", "en")
+	result, err := svc.Register(ctx, "me@example.com", "Me User", "Password1", "en", "Test Org")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestAuthService_UpdateProfile_Success(t *testing.T) {
 	ctx := context.Background()
 	svc := newAuthSvc(t)
 
-	result, err := svc.Register(ctx, "update@example.com", "Old Name", "Password1", "en")
+	result, err := svc.Register(ctx, "update@example.com", "Old Name", "Password1", "en", "Test Org")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -139,7 +139,7 @@ func TestAuthService_UpdateProfile_EmptyName(t *testing.T) {
 	ctx := context.Background()
 	svc := newAuthSvc(t)
 
-	result, err := svc.Register(ctx, "empty@example.com", "Some User", "Password1", "en")
+	result, err := svc.Register(ctx, "empty@example.com", "Some User", "Password1", "en", "Test Org")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -163,7 +163,7 @@ func TestAuthService_UpdateProfile_NameTooLong(t *testing.T) {
 	ctx := context.Background()
 	svc := newAuthSvc(t)
 
-	result, err := svc.Register(ctx, "long@example.com", "User", "Password1", "en")
+	result, err := svc.Register(ctx, "long@example.com", "User", "Password1", "en", "Test Org")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -276,7 +276,7 @@ func TestAuthService_RequestPasswordReset_Success(t *testing.T) {
 	mailer := &testutil.MockMailer{}
 	svc := service.NewAuthService(ctx, sharedQueries, sharedPool, mailer, "test-jwt-secret", "test-hmac-secret", "cloud", 24*time.Hour, false)
 
-	if _, err := svc.Register(ctx, "reset-req@example.com", "Reset User", "Password1", "en"); err != nil {
+	if _, err := svc.Register(ctx, "reset-req@example.com", "Reset User", "Password1", "en", "Test Org"); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 	before := len(mailer.Calls)
@@ -294,7 +294,7 @@ func TestAuthService_ChangePassword_WeakPassword(t *testing.T) {
 	ctx := context.Background()
 	svc := newAuthSvc(t)
 
-	result, err := svc.Register(ctx, "chweak@example.com", "User", "Password1", "en")
+	result, err := svc.Register(ctx, "chweak@example.com", "User", "Password1", "en", "Test Org")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -333,7 +333,7 @@ func TestAuthService_ChangePassword_WrongCurrent(t *testing.T) {
 	ctx := context.Background()
 	svc := newAuthSvc(t)
 
-	result, err := svc.Register(ctx, "chwrong@example.com", "User", "Password1", "en")
+	result, err := svc.Register(ctx, "chwrong@example.com", "User", "Password1", "en", "Test Org")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}

@@ -13,13 +13,13 @@ export function CreateOrgPage() {
   const navigate = useNavigate()
   const { setActiveOrgID } = useAuthStore()
   const { t } = useI18n()
-  const [orgName, setOrgName] = useState(() => sessionStorage.getItem('pending_org_name') ?? '')
+  const [orgName, setOrgName] = useState('')
   const [fieldError, setFieldError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
 
   const createOrgMutation = useMutation({
     mutationFn: () => api.post<Organization>('/api/orgs/', { name: orgName }),
-    onSuccess: (org) => { setActiveOrgID(org.id); sessionStorage.removeItem('pending_org_name'); navigate('/dash') },
+    onSuccess: (org) => { setActiveOrgID(org.id); navigate('/dash') },
     onError: (err: unknown) => { setFormError(err instanceof ApiError ? err.message || t.auth_something_wrong : t.auth_something_wrong) },
   })
 

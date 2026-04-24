@@ -67,11 +67,12 @@ func (h *AuthHandler) SetupStatus(w http.ResponseWriter, r *http.Request) {
 // Register handles POST /auth/register.
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Email           string `json:"email"`
-		Name            string `json:"name"`
-		Password        string `json:"password"`
-		AcceptedTerms   *bool  `json:"accepted_terms"`
-		AcceptedPrivacy *bool  `json:"accepted_privacy"`
+		Email            string `json:"email"`
+		Name             string `json:"name"`
+		Password         string `json:"password"`
+		OrganizationName string `json:"organization_name"`
+		AcceptedTerms    *bool  `json:"accepted_terms"`
+		AcceptedPrivacy  *bool  `json:"accepted_privacy"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		WriteError(w, http.StatusBadRequest, "invalid_request", "Invalid JSON body")
@@ -87,7 +88,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.authService.Register(r.Context(), req.Email, req.Name, req.Password, LocaleFromRequest(r))
+	result, err := h.authService.Register(r.Context(), req.Email, req.Name, req.Password, LocaleFromRequest(r), req.OrganizationName)
 	if err != nil {
 		var svcErr *service.ServiceError
 		if errors.As(err, &svcErr) {
@@ -102,23 +103,26 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	// Self-host first user: auto-verified, frontend can proceed to login
 	if result.AutoLogin {
 		WriteJSON(w, http.StatusCreated, map[string]interface{}{
-			"user_id":    result.UserID,
-			"email":      result.Email,
-			"auto_login": true,
+			"user_id":         result.UserID,
+			"email":           result.Email,
+			"organization_id": result.OrganizationID,
+			"auto_login":      true,
 		})
 		return
 	}
 
 	if h.mailer.IsSMTP() {
 		WriteJSON(w, http.StatusCreated, map[string]interface{}{
-			"user_id":    result.UserID,
-			"email":      result.Email,
-			"email_sent": true,
+			"user_id":         result.UserID,
+			"email":           result.Email,
+			"organization_id": result.OrganizationID,
+			"email_sent":      true,
 		})
 	} else {
 		WriteJSON(w, http.StatusCreated, map[string]interface{}{
 			"user_id":          result.UserID,
 			"email":            result.Email,
+			"organization_id":  result.OrganizationID,
 			"verification_url": result.VerificationURL,
 		})
 	}

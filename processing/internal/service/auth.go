@@ -35,10 +35,11 @@ func init() {
 
 // RegisterResult is returned by AuthService.Register.
 type RegisterResult struct {
-	UserID          uuid.UUID `json:"user_id"`
-	Email           string    `json:"email"`
-	VerificationURL string    `json:"verification_url,omitempty"`
-	AutoLogin       bool      `json:"auto_login,omitempty"`
+	UserID          uuid.UUID  `json:"user_id"`
+	Email           string     `json:"email"`
+	OrganizationID  *uuid.UUID `json:"organization_id,omitempty"`
+	VerificationURL string     `json:"verification_url,omitempty"`
+	AutoLogin       bool       `json:"auto_login,omitempty"`
 }
 
 // LoginResult is returned by AuthService.Login.
@@ -172,10 +173,12 @@ func (s *AuthService) SetupStatus(ctx context.Context) (*SetupStatusResult, erro
 	return &SetupStatusResult{SetupComplete: setupDone, RegistrationOpen: !setupDone}, nil
 }
 
-// Register creates a new user account and sends a verification email.
+// Register creates a new user account, provisions their organization, and sends
+// a verification email. User + organization + owner membership are created in a
+// single transaction so an abandoned signup never leaves an orphaned user.
 // In self-host mode, registration is only allowed for the first user (setup).
 // locale controls the language of the verification email ("en" or "ru").
-func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, locale string) (*RegisterResult, error) {
+func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, locale, orgName string) (*RegisterResult, error) {
 	// Validate inputs (before any DB work).
 	if strings.TrimSpace(emailAddr) == "" {
 		return nil, &ServiceError{Code: "invalid_email", Message: "Email is required", Status: http.StatusUnprocessableEntity}
@@ -195,6 +198,9 @@ func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, l
 	if !hasPasswordComplexity(password) {
 		return nil, &ServiceError{Code: "password_too_weak", Message: "Password must include uppercase, lowercase, and a digit", Status: http.StatusUnprocessableEntity}
 	}
+	if err := validateOrgName(orgName); err != nil {
+		return nil, err
+	}
 
 	// Hash password
 	hash, err := crypto.HashPassword(password)
@@ -205,13 +211,14 @@ func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, l
 	// Self-host: use advisory lock + transaction to prevent TOCTOU race where two
 	// concurrent requests both see zero users and both create admin accounts.
 	if s.deploymentMode == "self_host" {
-		return s.registerFirstUser(ctx, emailAddr, name, hash)
+		return s.registerFirstUser(ctx, emailAddr, name, hash, orgName)
 	}
 
 	// Cloud path: normal registration.
 	if s.skipEmailVerification {
-		// Skip email verification: create user and auto-verify in one transaction.
+		// Skip email verification: create user + org + membership, auto-verify in one transaction.
 		var user db.User
+		var org *db.Organization
 		err = txutil.WithTx(ctx, s.pool, func(tx pgx.Tx) error {
 			q := s.queries.WithTx(tx)
 
@@ -236,22 +243,29 @@ func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, l
 			}); txErr != nil {
 				return fmt.Errorf("register: record terms acceptance: %w", txErr)
 			}
+			org, txErr = createOrganizationWithOwnerTx(ctx, q, orgName, s.deploymentMode, user.ID)
+			if txErr != nil {
+				return txErr
+			}
 			return nil
 		})
 		if err != nil {
 			return nil, err
 		}
 		return &RegisterResult{
-			UserID:    user.ID,
-			Email:     user.Email,
-			AutoLogin: true,
+			UserID:         user.ID,
+			Email:          user.Email,
+			OrganizationID: &org.ID,
+			AutoLogin:      true,
 		}, nil
 	}
 
-	// Wrap user creation, verification token, and email send in a single transaction
-	// so a mailer failure rolls back the user row — otherwise the email gets "stuck"
-	// as an unverified account and subsequent registration attempts return 409.
+	// Wrap user creation, org provisioning, verification token, and email send in a
+	// single transaction so a mailer failure rolls back the whole signup —
+	// otherwise the email gets "stuck" as an unverified account and subsequent
+	// registration attempts return 409.
 	var user db.User
+	var org *db.Organization
 	var link string
 	err = txutil.WithTx(ctx, s.pool, func(tx pgx.Tx) error {
 		q := s.queries.WithTx(tx)
@@ -274,6 +288,11 @@ func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, l
 			PolicyVersion: 1,
 		}); txErr != nil {
 			return fmt.Errorf("register: record terms acceptance: %w", txErr)
+		}
+
+		org, txErr = createOrganizationWithOwnerTx(ctx, q, orgName, s.deploymentMode, user.ID)
+		if txErr != nil {
+			return txErr
 		}
 
 		rawToken, tokenHash, txErr := crypto.GenerateToken()
@@ -300,8 +319,9 @@ func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, l
 	}
 
 	result := &RegisterResult{
-		UserID: user.ID,
-		Email:  user.Email,
+		UserID:         user.ID,
+		Email:          user.Email,
+		OrganizationID: &org.ID,
 	}
 	if !s.mailer.IsSMTP() {
 		result.VerificationURL = link
@@ -310,7 +330,7 @@ func (s *AuthService) Register(ctx context.Context, emailAddr, name, password, l
 }
 
 // registerFirstUser handles self-host first-user registration inside an advisory-locked transaction.
-func (s *AuthService) registerFirstUser(ctx context.Context, emailAddr, name, passwordHash string) (*RegisterResult, error) {
+func (s *AuthService) registerFirstUser(ctx context.Context, emailAddr, name, passwordHash, orgName string) (*RegisterResult, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("register: begin tx: %w", err)
@@ -354,14 +374,20 @@ func (s *AuthService) registerFirstUser(ctx context.Context, emailAddr, name, pa
 		return nil, fmt.Errorf("register: record terms acceptance: %w", err)
 	}
 
+	org, err := createOrganizationWithOwnerTx(ctx, txQueries, orgName, s.deploymentMode, user.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("register: commit: %w", err)
 	}
 
 	return &RegisterResult{
-		UserID:    user.ID,
-		Email:     user.Email,
-		AutoLogin: true,
+		UserID:         user.ID,
+		Email:          user.Email,
+		OrganizationID: &org.ID,
+		AutoLogin:      true,
 	}, nil
 }
 
