@@ -30,7 +30,8 @@ interface RequestOpts {
 async function request<T>(method: string, path: string, body: unknown, opts: RequestOpts): Promise<T> {
   const url = opts.baseUrl ? `${opts.baseUrl}${path}` : path
 
-  const headers: Record<string, string> = { 'X-Requested-With': 'XMLHttpRequest' }
+  const headers: Record<string, string> = {}
+  if (opts.origin === 'processing') headers['X-Requested-With'] = 'XMLHttpRequest'
   if (body) headers['Content-Type'] = 'application/json'
 
   const res = await fetch(url, {
