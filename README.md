@@ -28,14 +28,14 @@ AgentOrbit sits between your AI agent and the LLM provider as a **transparent pr
 
 | | |
 |---|---|
-| 🔄 **Transparent proxy** | OpenAI- and Anthropic-compatible endpoints, < 50 ms overhead |
-| 📊 **Real-time dashboard** | Live sessions, spans, tokens, cost, latency — over WebSocket |
-| 🧠 **LLM-powered narratives** | Auto-generated summaries of what each agent session did |
-| 🚨 **Failure clusters & alerts** | Group related errors, notify on patterns |
-| 🗝️ **Secure by default** | API keys stored as HMAC digests, provider keys AES-256-GCM encrypted |
-| 🏢 **Multi-tenant** | Organization-scoped, with invitations and roles |
-| 📤 **CSV export** | Session- and span-level exports with filters applied |
-| 🐳 **One-command deploy** | `docker compose up -d` ships the whole stack |
+| **Transparent proxy** | OpenAI- and Anthropic-compatible endpoints, < 50 ms overhead |
+| **Real-time dashboard** | Live sessions, spans, tokens, cost, latency — over WebSocket |
+| **LLM-powered narratives** | Auto-generated summaries of what each agent session did |
+| **Failure clusters & alerts** | Group related errors, notify on patterns |
+| **Secure by default** | API keys stored as HMAC digests, provider keys AES-256-GCM encrypted |
+| **Multi-tenant** | Organization-scoped, with invitations and roles |
+| **CSV export** | Session- and span-level exports with filters applied |
+| **One-command deploy** | `docker compose up -d` ships the whole stack |
 
 ## 🚀 Quick Start
 
