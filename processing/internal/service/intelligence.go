@@ -240,8 +240,8 @@ Only flag genuine content-level anomalies.`, locale)
 		fmt.Fprintf(&userMsgBuilder, "  model: %s\n", sp.Model)
 		fmt.Fprintf(&userMsgBuilder, "  http_status: %d\n", sp.HttpStatus)
 		fmt.Fprintf(&userMsgBuilder, "  duration_ms: %d\n", sp.DurationMs)
-		fmt.Fprintf(&userMsgBuilder, "  input: %s\n", truncate(deref(sp.Input), 500))
-		fmt.Fprintf(&userMsgBuilder, "  output: %s\n", truncate(deref(sp.Output), 500))
+		fmt.Fprintf(&userMsgBuilder, "  input: %s\n", truncateForLLM(deref(sp.Input), 500, 300))
+		fmt.Fprintf(&userMsgBuilder, "  output: %s\n", truncateForLLM(deref(sp.Output), 500, 300))
 	}
 
 	messages := []llm.Message{
@@ -403,17 +403,14 @@ func (s *IntelligenceService) generateNarrative(ctx context.Context, sessionID, 
 	systemMsg := fmt.Sprintf(
 		`You are an observability analyst for AI agent sessions. Write in %s language.
 
-Produce a 2-4 sentence narrative covering:
-1. What the agent did and accomplished.
-2. Any anomalies you detect — flag them explicitly. Look for:
-   - HTTP errors (4xx/5xx status codes)
-   - Output that echoes or parrots the input instead of answering it
-   - Loss of context between turns (agent forgets earlier conversation)
-   - Hallucinated, fabricated, or placeholder data in outputs
-   - Unusually short or empty outputs relative to the input complexity
-   - Unparseable or malformed spans
+Write 1-2 short sentences. Be terse and factual — no filler, no hedging, no preamble.
 
-Start with a brief summary of the task, then note any issues found. If no anomalies are detected, just summarize the session.`,
+Sentence 1: what the agent did (one clause, concrete).
+Sentence 2 (only if anomalies exist): flag them. Otherwise omit entirely.
+
+Anomalies to flag: HTTP 4xx/5xx, output echoing input, lost context between turns, hallucinated/placeholder data, suspiciously empty outputs, malformed spans.
+
+Do not restate the task framing. Do not explain your reasoning. Output only the narrative.`,
 		locale,
 	)
 
@@ -430,8 +427,8 @@ Start with a brief summary of the task, then note any issues found. If no anomal
 		if sp.OutputTokens != nil {
 			fmt.Fprintf(&userMsgBuilder, "  output_tokens: %d\n", *sp.OutputTokens)
 		}
-		fmt.Fprintf(&userMsgBuilder, "  input: %s\n", truncate(deref(sp.Input), 500))
-		fmt.Fprintf(&userMsgBuilder, "  output: %s\n", truncate(deref(sp.Output), 500))
+		fmt.Fprintf(&userMsgBuilder, "  input: %s\n", truncateForLLM(deref(sp.Input), 500, 300))
+		fmt.Fprintf(&userMsgBuilder, "  output: %s\n", truncateForLLM(deref(sp.Output), 500, 300))
 	}
 
 	messages := []llm.Message{
@@ -519,7 +516,7 @@ func (s *IntelligenceService) clusterFailure(ctx context.Context, sessionID, org
 				"Session error context:\n  http_status: %d\n  model: %s\n  output: %s",
 				lastSpan.HttpStatus,
 				lastSpan.Model,
-				truncate(deref(lastSpan.Output), 500),
+				truncateForLLM(deref(lastSpan.Output), 500, 300),
 			)
 
 			messages := []llm.Message{
@@ -729,6 +726,31 @@ func truncate(s string, maxLen int) string {
 		maxLen--
 	}
 	return s[:maxLen]
+}
+
+// truncateForLLM returns s shortened for inclusion in an LLM prompt.
+// If s fits within maxLen, returned unchanged. Otherwise keeps the first
+// headLen bytes and the last (maxLen-headLen) bytes, joined by an explicit
+// "...[truncated, N bytes]..." marker so the model knows it sees a fragment.
+// All splits respect UTF-8 rune boundaries.
+func truncateForLLM(s string, maxLen, headLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	tailLen := maxLen - headLen
+	if tailLen <= 0 || headLen <= 0 {
+		return truncate(s, maxLen)
+	}
+	head := truncate(s, headLen)
+
+	tailStart := len(s) - tailLen
+	for tailStart < len(s) && !utf8.RuneStart(s[tailStart]) {
+		tailStart++
+	}
+	tail := s[tailStart:]
+
+	omitted := len(s) - len(head) - len(tail)
+	return fmt.Sprintf("%s...[truncated, %d bytes]...%s", head, omitted, tail)
 }
 
 // buildMetadataSummary builds a deterministic metadata summary from spans.
