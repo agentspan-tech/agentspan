@@ -56,7 +56,7 @@ func TestFallbackHandler_Returns503(t *testing.T) {
 // the helper used by NewSPAHandler when only .gitkeep is present in the FS.
 func TestNewSPAHandler_FallbackViaPublicPath(t *testing.T) {
 	sub := fstest.MapFS{".gitkeep": &fstest.MapFile{Data: []byte("placeholder")}}
-	h := newSPAHandlerFromFS(sub)
+	h := newSPAHandlerFromFS(sub, "")
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	h.ServeHTTP(rr, req)
@@ -75,7 +75,7 @@ func TestNewSPAHandler_HappyPathViaInjectedFS(t *testing.T) {
 		"index.html":     &fstest.MapFile{Data: []byte("<!doctype html><html>app</html>")},
 		"assets/main.js": &fstest.MapFile{Data: []byte("console.log('hi')")},
 	}
-	h := newSPAHandlerFromFS(sub)
+	h := newSPAHandlerFromFS(sub, "")
 
 	// Root returns index.html with CSP headers.
 	rr := httptest.NewRecorder()
@@ -107,6 +107,21 @@ func TestNewSPAHandler_HappyPathViaInjectedFS(t *testing.T) {
 	}
 }
 
+// TestNewSPAHandler_CSPIncludesBillingURL ensures connect-src contains the
+// billing origin so the SPA can fetch cross-origin in cloud deployments.
+func TestNewSPAHandler_CSPIncludesBillingURL(t *testing.T) {
+	sub := fstest.MapFS{
+		"index.html": &fstest.MapFile{Data: []byte("<!doctype html><html>app</html>")},
+	}
+	h := newSPAHandlerFromFS(sub, "https://billing.agentorbit.tech")
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
+	csp := rr.Header().Get("Content-Security-Policy")
+	if !strings.Contains(csp, "connect-src 'self' ws: wss: https://billing.agentorbit.tech") {
+		t.Errorf("expected billing origin in connect-src, got %q", csp)
+	}
+}
+
 // TestNewSPAHandler_RealAssetsPath exercises the happy path: with real built
 // assets present in the embedded dist directory, the handler should serve
 // index.html on a GET / request and emit security headers.
@@ -120,7 +135,7 @@ func TestNewSPAHandler_RealAssetsPath(t *testing.T) {
 		t.Skip("dist/ contains only .gitkeep — skipping happy-path test (run 'make web' first)")
 	}
 
-	h, err := NewSPAHandler()
+	h, err := NewSPAHandler("")
 	if err != nil {
 		t.Fatalf("NewSPAHandler: %v", err)
 	}

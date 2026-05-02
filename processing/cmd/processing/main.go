@@ -186,7 +186,7 @@ func main() {
 	r.Use(chiMiddleware.RequestID)
 	r.Use(middleware.SlogAccess)
 	r.Use(errtrack.Middleware)
-	r.Use(middleware.SecurityHeaders)
+	r.Use(middleware.SecurityHeaders(cfg.BillingURL))
 	r.Use(middleware.MaxBodySize(1 << 20)) // 1MB default limit for all endpoints
 	if cfg.AllowedOrigins != "" {
 		r.Use(middleware.CORS(cfg.AllowedOrigins))
@@ -292,7 +292,7 @@ func main() {
 	r.With(wsRateLimiter.Middleware).Get("/cable", wsHandler.ServeHTTP)
 
 	// SPA handler — serves the embedded React frontend for all non-API paths
-	spaHandler, err := processingWeb.NewSPAHandler()
+	spaHandler, err := processingWeb.NewSPAHandler(cfg.BillingURL)
 	if err != nil {
 		slog.Warn("SPA handler unavailable, serving API only", "error", err)
 	} else {

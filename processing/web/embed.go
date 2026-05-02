@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+
+	"github.com/agentorbit-tech/agentorbit/processing/internal/middleware"
 )
 
 // dist is the compiled Vite output, embedded at build time.
@@ -30,29 +32,32 @@ before 'go build ./processing/cmd/processing'.
 
 // NewSPAHandler returns an http.Handler that serves the embedded Vite SPA.
 // Unknown paths fall back to index.html for client-side routing.
+// billingURL is embedded into the CSP connect-src so the SPA can call a
+// separately-hosted billing service in cloud deployments.
 //
 // If the embedded dist/ directory contains only the .gitkeep placeholder
 // (i.e. the SPA was never built), NewSPAHandler returns a 503 stub handler
 // explaining the build step instead. The error return is reserved for
 // genuine fs.Sub failures.
-func NewSPAHandler() (http.Handler, error) {
+func NewSPAHandler(billingURL string) (http.Handler, error) {
 	sub, err := fs.Sub(embeddedWebFS, "dist")
 	if err != nil {
 		return nil, err
 	}
-	return newSPAHandlerFromFS(sub), nil
+	return newSPAHandlerFromFS(sub, billingURL), nil
 }
 
 // newSPAHandlerFromFS contains the post-fs.Sub logic of NewSPAHandler so tests
 // can inject a synthetic FS and exercise the fallback + happy paths through
 // the same code path that production uses.
-func newSPAHandlerFromFS(sub fs.FS) http.Handler {
+func newSPAHandlerFromFS(sub fs.FS, billingURL string) http.Handler {
 	if onlyGitkeep(sub) {
 		return fallbackHandler()
 	}
+	csp := middleware.BuildCSP(billingURL)
 	fileServer := http.FileServer(http.FS(sub))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'")
+		w.Header().Set("Content-Security-Policy", csp)
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
 		path := strings.TrimPrefix(r.URL.Path, "/")

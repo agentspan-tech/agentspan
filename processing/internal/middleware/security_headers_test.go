@@ -3,13 +3,14 @@ package middleware_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	mw "github.com/agentorbit-tech/agentorbit/processing/internal/middleware"
 )
 
 func TestSecurityHeaders(t *testing.T) {
-	handler := mw.SecurityHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := mw.SecurityHeaders("")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -38,5 +39,18 @@ func TestSecurityHeaders(t *testing.T) {
 	csp := rr.Header().Get("Content-Security-Policy")
 	if csp == "" {
 		t.Error("Content-Security-Policy header not set")
+	}
+}
+
+func TestSecurityHeaders_BillingURLInCSP(t *testing.T) {
+	handler := mw.SecurityHeaders("https://billing.agentorbit.tech")(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, httptest.NewRequest("GET", "/", nil))
+
+	csp := rr.Header().Get("Content-Security-Policy")
+	if !strings.Contains(csp, "connect-src 'self' ws: wss: https://billing.agentorbit.tech") {
+		t.Errorf("CSP connect-src should include billing origin, got %q", csp)
 	}
 }
