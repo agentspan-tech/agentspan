@@ -124,7 +124,7 @@ Use GitHub Issues. Please include:
 
 ## Security Vulnerabilities
 
-If you discover a security vulnerability, **do not open a public issue**. Instead, email security@agentorbit.tech (or your preferred contact). We will respond within 48 hours.
+If you discover a security vulnerability, **do not open a public issue**. Instead, email agentorbit.tech@gmail.com (or your preferred contact). We will respond within 48 hours.
 
 ## License
 

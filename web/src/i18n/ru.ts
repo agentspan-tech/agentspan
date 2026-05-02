@@ -649,7 +649,7 @@ export const ru: Record<TranslationKey, string> = {
   legal_privacy_title: 'Политика обработки персональных данных',
   legal_privacy_intro: 'Настоящая политика описывает, как AgentOrbit собирает, обрабатывает и хранит персональные данные пользователей сервиса agentorbit.tech.',
   legal_privacy_operator_title: '1. Оператор персональных данных',
-  legal_privacy_operator_body: 'Оператором персональных данных является физическое лицо, осуществляющее эксплуатацию сервиса AgentOrbit. По вопросам обработки персональных данных обращайтесь: privacy@agentorbit.tech.',
+  legal_privacy_operator_body: 'Оператором персональных данных является физическое лицо, осуществляющее эксплуатацию сервиса AgentOrbit. По вопросам обработки персональных данных обращайтесь: agentorbit.tech@gmail.com.',
   legal_privacy_data_title: '2. Какие данные мы собираем',
   legal_privacy_data_body: 'При регистрации и использовании сервиса мы собираем следующие персональные данные:\n- Адрес электронной почты (для аутентификации, связи и восстановления аккаунта)\n- Имя (для отображения в сервисе)\n- Пароль (хранится в виде bcrypt-хеша; оригинальный пароль не сохраняется)',
   legal_privacy_purpose_title: '3. Цели обработки данных',
@@ -657,7 +657,7 @@ export const ru: Record<TranslationKey, string> = {
   legal_privacy_storage_title: '4. Хранение и защита данных',
   legal_privacy_storage_body: 'Данные хранятся в базе данных PostgreSQL. Пароли хешируются bcrypt. API-ключи провайдеров шифруются AES-256-GCM. Доступ к данным ограничен авторизованным персоналом. Данные хранятся в течение срока существования аккаунта или в соответствии с требованиями законодательства.',
   legal_privacy_rights_title: '5. Ваши права',
-  legal_privacy_rights_body: 'Вы имеете право:\n- Получить доступ к своим персональным данным\n- Исправить неточные данные\n- Удалить свой аккаунт и связанные данные\n- Отозвать согласие на обработку данных\n\nДля реализации прав обращайтесь: privacy@agentorbit.tech.',
+  legal_privacy_rights_body: 'Вы имеете право:\n- Получить доступ к своим персональным данным\n- Исправить неточные данные\n- Удалить свой аккаунт и связанные данные\n- Отозвать согласие на обработку данных\n\nДля реализации прав обращайтесь: agentorbit.tech@gmail.com.',
   legal_privacy_cookies_title: '6. Файлы cookie и аналитика',
   legal_privacy_cookies_body: 'Мы используем только необходимые cookie для аутентификации (JWT-токен сессии). Сторонние сервисы аналитики и отслеживания не используются.',
   legal_privacy_changes_title: '7. Изменения политики',
@@ -681,7 +681,7 @@ export const ru: Record<TranslationKey, string> = {
   legal_terms_changes_title: '7. Изменение условий',
   legal_terms_changes_body: 'Мы можем обновлять эти условия. О существенных изменениях мы сообщим через сервис. Продолжение использования после уведомления означает принятие.',
   legal_terms_contact_title: '8. Контакты',
-  legal_terms_contact_body: 'По вопросам об условиях обращайтесь: support@agentorbit.tech.',
+  legal_terms_contact_body: 'По вопросам об условиях обращайтесь: agentorbit.tech@gmail.com.',
 
   // Consent
   legal_consent_title: 'Согласие на обработку персональных данных',
@@ -693,9 +693,9 @@ export const ru: Record<TranslationKey, string> = {
   legal_consent_duration_title: '3. Срок обработки',
   legal_consent_duration_body: 'Персональные данные обрабатываются в течение срока существования вашей учётной записи. После удаления аккаунта данные удаляются в течение 30 дней, за исключением случаев, когда хранение требуется законодательством.',
   legal_consent_withdrawal_title: '4. Отзыв согласия',
-  legal_consent_withdrawal_body: 'Вы можете отозвать согласие в любое время, удалив аккаунт или обратившись по адресу privacy@agentorbit.tech. Отзыв согласия не влияет на законность обработки, осуществлённой до отзыва.',
+  legal_consent_withdrawal_body: 'Вы можете отозвать согласие в любое время, удалив аккаунт или обратившись по адресу agentorbit.tech@gmail.com. Отзыв согласия не влияет на законность обработки, осуществлённой до отзыва.',
   legal_consent_controller_title: '5. Оператор данных',
-  legal_consent_controller_body: 'Оператором персональных данных является физическое лицо, осуществляющее эксплуатацию сервиса AgentOrbit. Контакт: privacy@agentorbit.tech.',
+  legal_consent_controller_body: 'Оператором персональных данных является физическое лицо, осуществляющее эксплуатацию сервиса AgentOrbit. Контакт: agentorbit.tech@gmail.com.',
 
   // Footer links
   footer_terms: 'Пользовательское соглашение',

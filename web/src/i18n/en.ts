@@ -647,7 +647,7 @@ export const en = {
   legal_privacy_title: 'Personal Data Processing Policy',
   legal_privacy_intro: 'This policy describes how AgentOrbit collects, processes, and stores personal data of users of the agentorbit.tech service.',
   legal_privacy_operator_title: '1. Data Controller',
-  legal_privacy_operator_body: 'The data controller is an individual operating the AgentOrbit service. For questions regarding personal data processing, contact: privacy@agentorbit.tech.',
+  legal_privacy_operator_body: 'The data controller is an individual operating the AgentOrbit service. For questions regarding personal data processing, contact: agentorbit.tech@gmail.com.',
   legal_privacy_data_title: '2. Data We Collect',
   legal_privacy_data_body: 'We collect the following personal data during registration and use of the service:\n- Email address (for authentication, communication, and account recovery)\n- Name (for display within the service)\n- Password (stored as a bcrypt hash; the original password is never stored)',
   legal_privacy_purpose_title: '3. Purpose of Data Processing',
@@ -655,7 +655,7 @@ export const en = {
   legal_privacy_storage_title: '4. Data Storage and Protection',
   legal_privacy_storage_body: 'Data is stored in a PostgreSQL database. Passwords are hashed with bcrypt. Provider API keys are encrypted with AES-256-GCM. Access to data is restricted to authorized personnel. Data is retained for the duration of the account or as required by applicable law.',
   legal_privacy_rights_title: '5. Your Rights',
-  legal_privacy_rights_body: 'You have the right to:\n- Access your personal data\n- Correct inaccurate data\n- Delete your account and associated data\n- Withdraw consent to data processing\n\nTo exercise these rights, contact privacy@agentorbit.tech.',
+  legal_privacy_rights_body: 'You have the right to:\n- Access your personal data\n- Correct inaccurate data\n- Delete your account and associated data\n- Withdraw consent to data processing\n\nTo exercise these rights, contact agentorbit.tech@gmail.com.',
   legal_privacy_cookies_title: '6. Cookies and Analytics',
   legal_privacy_cookies_body: 'We use essential cookies for authentication (JWT session token). No third-party analytics or tracking services are used.',
   legal_privacy_changes_title: '7. Policy Changes',
@@ -679,7 +679,7 @@ export const en = {
   legal_terms_changes_title: '7. Changes to Terms',
   legal_terms_changes_body: 'We may update these terms from time to time. Material changes will be communicated through the service. Continued use after notification constitutes acceptance.',
   legal_terms_contact_title: '8. Contact',
-  legal_terms_contact_body: 'For questions about these terms, contact support@agentorbit.tech.',
+  legal_terms_contact_body: 'For questions about these terms, contact agentorbit.tech@gmail.com.',
 
   // Consent
   legal_consent_title: 'Consent to Personal Data Processing',
@@ -691,9 +691,9 @@ export const en = {
   legal_consent_duration_title: '3. Duration of Processing',
   legal_consent_duration_body: 'Personal data is processed for the duration of your account. After account deletion, data is removed within 30 days, except where retention is required by law.',
   legal_consent_withdrawal_title: '4. Withdrawal of Consent',
-  legal_consent_withdrawal_body: 'You may withdraw your consent at any time by deleting your account or contacting privacy@agentorbit.tech. Withdrawal of consent does not affect the lawfulness of processing carried out before the withdrawal.',
+  legal_consent_withdrawal_body: 'You may withdraw your consent at any time by deleting your account or contacting agentorbit.tech@gmail.com. Withdrawal of consent does not affect the lawfulness of processing carried out before the withdrawal.',
   legal_consent_controller_title: '5. Data Controller',
-  legal_consent_controller_body: 'The data controller is an individual operating the AgentOrbit service. Contact: privacy@agentorbit.tech.',
+  legal_consent_controller_body: 'The data controller is an individual operating the AgentOrbit service. Contact: agentorbit.tech@gmail.com.',
 
   // Footer links
   footer_terms: 'Terms of Service',
