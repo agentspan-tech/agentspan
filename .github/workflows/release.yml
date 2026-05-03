@@ -61,9 +61,38 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.cache_scope }}
           cache-to: type=gha,mode=max,scope=${{ matrix.cache_scope }}
 
-  # Cross-compile Go binaries
+  # Build the frontend once and share it with all binary matrix jobs. Without
+  # this, every matrix shard re-ran `npm ci` + `vite build` even though the
+  # output is platform-independent — wasting ~4× the work.
+  frontend:
+    name: Frontend Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build frontend
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: frontend-dist
+          path: web/dist
+          retention-days: 1
+
+  # Cross-compile Go binaries. Frontend dist is downloaded as an artifact from
+  # the frontend job above instead of being rebuilt per-shard.
   binaries:
     name: Binaries (${{ matrix.goos }}/${{ matrix.goarch }})
+    needs: [frontend]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -79,18 +108,10 @@ jobs:
             proxy/go.sum
             processing/go.sum
 
-      - uses: actions/setup-node@v6
+      - uses: actions/download-artifact@v8
         with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-
-      # Build frontend (processing binary embeds it)
-      - name: Build frontend
-        working-directory: web
-        run: |
-          npm ci
-          npm run build
+          name: frontend-dist
+          path: web/dist
 
       - name: Build proxy
         env:
